@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$Cosip - Crypto Mining</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        solGreen: '#14F195',
+                        solPurple: '#9945FF',
+                        darkBg: '#0f172a',
+                        cardBg: '#1e293b'
+                    },
+                    boxShadow: {
+                        'neon-green': '0 0 10px #14F195, 0 0 20px #14F195',
+                        'neon-purple': '0 0 10px #9945FF, 0 0 20px #9945FF',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Space+Grotesk:wght@700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .font-space { font-family: 'Space Grotesk', sans-serif; }
+        .neon-text-green { text-shadow: 0 0 8px #14F195; }
+        .neon-text-purple { text-shadow: 0 0 8px #9945FF; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #9945FF; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-darkBg text-white min-h-screen flex flex-col selection:bg-solGreen selection:text-black">
+
+    <div id="app" class="flex-grow flex flex-col relative overflow-x-hidden">
+        
+        <div id="loginScreen" class="absolute inset-0 flex items-center justify-center bg-darkBg z-50 transition-opacity duration-500">
+            <div class="bg-cardBg p-8 rounded-2xl shadow-neon-purple max-w-md w-full mx-4 border border-solPurple/30 text-center relative">
+                <div id="loginLoading" class="absolute inset-0 bg-cardBg rounded-2xl flex items-center justify-center z-10 hidden flex-col">
+                    <div class="w-10 h-10 border-4 border-solGreen border-t-solPurple rounded-full animate-spin mb-4"></div>
+                    <div class="text-solGreen font-bold animate-pulse">Syncing with network...</div>
+                </div>
+
+                <h1 class="text-5xl font-space font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-solGreen to-solPurple neon-text-green tracking-tighter">
+                    $Cosip
+                </h1>
+                <p class="text-gray-400 mb-8">Enter the mining network (Min 5 letters)</p>
+                
+                <input type="text" id="usernameInput" placeholder="Enter Username" 
+                    class="w-full bg-darkBg border border-gray-600 rounded-lg p-4 text-white focus:outline-none focus:border-solGreen focus:ring-1 focus:ring-solGreen transition-all mb-4 text-center text-lg placeholder-gray-500">
+                
+                <button onclick="handleLogin()" id="loginBtn"
+                    class="w-full bg-gradient-to-r from-solGreen to-solPurple text-black font-bold py-4 rounded-lg hover:shadow-neon-green transition-all transform hover:scale-[1.02]">
+                    CONNECT
+                </button>
+            </div>
+        </div>
+
+        <div id="userDashboard" class="hidden opacity-0 transition-opacity duration-500 flex-grow flex flex-col max-w-5xl mx-auto w-full p-4 lg:p-8 gap-6">
+            <header class="flex flex-col md:flex-row justify-between items-center border-b border-gray-700 pb-4 gap-4 md:gap-0">
+                <h1 class="text-3xl font-space font-bold text-transparent bg-clip-text bg-gradient-to-r from-solGreen to-solPurple">
+                    $Cosip
+                </h1>
+                <div class="flex items-center gap-4">
+                    <span class="text-gray-400">User: <span id="displayUsername" class="text-white font-bold"></span></span>
+                    <button onclick="logout()" class="text-sm border border-gray-600 px-3 py-1 rounded hover:bg-gray-700 text-red-400">Logout</button>
+                </div>
+            </header>
+
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-cardBg via-darkBg to-cardBg p-6 rounded-2xl border border-solGreen/30 shadow-lg relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-solGreen/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-10 -top-10 w-40 h-40 bg-solPurple/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="z-10">
+                    <h2 class="text-2xl font-space font-bold text-white mb-2">Welcome to $Cosip</h2>
+                    <p class="text-gray-300 text-sm max-w-2xl leading-relaxed">
+                        Mine, Withdraw real rewards to your Solana wallet.
+                    </p>
+                </div>
+                <div class="flex flex-row md:flex-col gap-3 shrink-0 z-10 w-full md:w-auto">
+                    <div class="bg-darkBg/80 px-4 py-2 rounded-xl border border-gray-700 text-center flex-1">
+                        <div class="text-[10px] text-gray-400 uppercase tracking-wider">Strategy</div>
+                        <div class="text-xs text-solGreen font-bold">Mine • Boost • Cashout</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Stats Card -->
+                <div class="bg-cardBg p-6 rounded-2xl border border-solGreen/30 shadow-[0_4px_20px_rgba(20,241,149,0.1)] flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-gray-400 text-sm uppercase tracking-wider mb-1">Current Balance</h2>
+                        <div class="text-5xl font-bold font-space text-solGreen mb-4 break-words">
+                            <span id="userBalance">0</span> <span class="text-2xl text-gray-400">$C</span>
+                        </div>
+                        <h2 class="text-gray-400 text-sm uppercase tracking-wider mb-1">Mining Power</h2>
+                        <div class="text-2xl font-bold text-white mb-6">
+                            <span id="userPower">100</span> Hash/s
+                        </div>
+                    </div>
+                    
+                    <button id="claimBtn" onclick="claimMining()" 
+                        class="w-full bg-solGreen text-black font-bold py-4 rounded-lg hover:shadow-neon-green transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none">
+                        CLAIM MINING (<span id="claimAmount">100</span> $C)
+                    </button>
+                    <div id="claimTimer" class="text-center text-solPurple text-sm mt-2 hidden font-mono"></div>
+                </div>
+
+                <!-- Notifications & Actions -->
+                <div class="flex flex-col gap-6">
+                    <div class="bg-cardBg p-6 rounded-2xl border border-gray-700 flex-grow max-h-48 overflow-y-auto">
+                        <h3 class="text-lg font-bold mb-4 text-solPurple border-b border-gray-700 pb-2">Network Logs</h3>
+                        <div id="userNotifications" class="space-y-3 text-sm">
+                            <div class="text-gray-500 italic">No recent messages...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="showModal('upgradeModal')" class="bg-cardBg border border-solPurple/50 p-4 rounded-xl hover:bg-solPurple/10 transition-colors text-center font-bold text-solPurple">
+                            UPGRADE POWER
+                        </button>
+                        <button onclick="showModal('withdrawModal')" class="bg-cardBg border border-solGreen/50 p-4 rounded-xl hover:bg-solGreen/10 transition-colors text-center font-bold text-solGreen">
+                            WITHDRAW
+                        </button>
+                    </div>
+
+                    <!-- Gemini AI Assistant -->
+                    <div class="bg-cardBg p-6 rounded-2xl border border-solPurple/40 shadow-[0_0_15px_rgba(153,69,255,0.15)] flex flex-col gap-4">
+                        <div class="flex items-center justify-between border-b border-gray-700 pb-3">
+                            <h3 class="text-md font-bold text-transparent bg-clip-text bg-gradient-to-r from-solGreen to-solPurple flex items-center gap-2">
+                                🤖 $Cosip AI Oracle & Assistant
+                            </h3>
+                            <button onclick="fetchAiInsights()" id="refreshAiBtn" class="text-xs bg-solPurple/20 hover:bg-solPurple/40 text-solPurple font-bold px-3 py-1 rounded transition-colors">
+                                Get Live Insights
+                            </button>
+                        </div>
+                        <div id="aiInsightsBox" class="text-xs text-gray-300 bg-darkBg p-3 rounded-lg border border-gray-800 italic min-h-[40px] flex items-center">
+                            Click 'Get Live Insights' for custom Solana market analysis powered by Gemini...
+                        </div>
+                        <div class="flex gap-2 mt-1">
+                            <input type="text" id="aiChatInput" placeholder="Ask AI about crypto mining..." class="bg-darkBg border border-gray-600 rounded p-2 text-white text-xs flex-grow focus:outline-none focus:border-solPurple">
+                            <button onclick="askAiAssistant()" class="bg-gradient-to-r from-solGreen to-solPurple text-black font-bold px-4 rounded text-xs hover:shadow-neon-green transition-all">Ask AI</button>
+                        </div>
+                        <div id="aiChatResponse" class="text-xs text-gray-200 bg-darkBg p-3 rounded-lg border border-solPurple/20 hidden"></div>
+                    </div>
+
+                    <!-- Referral System -->
+                    <div class="bg-cardBg p-4 rounded-xl border border-solPurple/30 mt-2">
+                        <h3 class="text-sm font-bold text-white mb-2">Refer & Earn 20 Hash/s</h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="referralLink" readonly class="w-full bg-darkBg border border-gray-600 rounded p-2 text-gray-400 text-xs font-mono outline-none">
+                            <button onclick="copyReferral()" class="bg-solPurple text-white px-4 rounded text-sm font-bold hover:bg-purple-600 transition-colors">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-cardBg p-6 rounded-2xl border border-gray-700">
+                <h3 class="text-lg font-bold mb-4 text-white">Active Transactions</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="text-gray-400 border-b border-gray-700">
+                            <tr>
+                                <th class="pb-2">Type</th>
+                                <th class="pb-2">Details</th>
+                                <th class="pb-2">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userRequestsList" class="divide-y divide-gray-800"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="adminDashboard" class="hidden opacity-0 transition-opacity duration-500 flex-grow flex flex-col max-w-7xl mx-auto w-full p-4 lg:p-8 gap-6">
+            <header class="flex justify-between items-center border-b border-red-500 pb-4">
+                <h1 class="text-3xl font-space font-bold text-red-500">
+                    $Cosip <span class="text-white">Admin</span>
+                </h1>
+                <button onclick="logout()" class="text-sm border border-gray-600 px-3 py-1 rounded hover:bg-gray-700 text-white">Logout</button>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-cardBg p-6 rounded-2xl border border-gray-700 lg:col-span-1 max-h-[500px] overflow-y-auto flex flex-col">
+                    <h3 class="text-lg font-bold mb-4 text-white sticky top-0 bg-cardBg py-2 border-b border-gray-700 z-10">Network Users</h3>
+                    <div id="adminUsersList" class="space-y-4 flex-grow"></div>
+                </div>
+
+                <div class="lg:col-span-2 flex flex-col gap-6">
+                    <div class="bg-cardBg p-6 rounded-2xl border border-red-500/30">
+                        <h3 class="text-lg font-bold mb-4 text-white border-b border-gray-700 pb-2">Pending Requests</h3>
+                        <div class="overflow-x-auto max-h-64 overflow-y-auto">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="text-gray-400">
+                                    <tr>
+                                        <th class="pb-2">User</th>
+                                        <th class="pb-2">Type</th>
+                                        <th class="pb-2">Details</th>
+                                        <th class="pb-2">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminRequestsList" class="divide-y divide-gray-800"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-cardBg p-6 rounded-2xl border border-solPurple/30">
+                        <h3 class="text-lg font-bold mb-4 text-solPurple border-b border-gray-700 pb-2">Send Notification</h3>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="w-full md:w-1/3">
+                                <label class="block text-xs text-gray-400 mb-1">Target User</label>
+                                <select id="adminNotifTarget" class="w-full bg-darkBg border border-gray-600 rounded p-3 text-white focus:outline-none focus:border-solPurple">
+                                    <option value="all">🌐 GLOBAL (All Users)</option>
+                                </select>
+                            </div>
+                            <div class="w-full md:w-2/3 flex flex-col justify-end">
+                                <label class="block text-xs text-gray-400 mb-1">Message Content</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="adminNotifMsg" placeholder="Enter message..." class="bg-darkBg border border-gray-600 rounded p-3 text-white flex-grow focus:outline-none focus:border-solPurple">
+                                    <button onclick="sendNotification()" class="bg-solPurple text-white px-6 rounded font-bold hover:bg-purple-600 transition-colors shadow-neon-purple">Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-cardBg p-6 rounded-2xl border border-gray-700 mt-2">
+                <h3 class="text-lg font-bold mb-4 text-gray-300 border-b border-gray-700 pb-2">Admin Action History</h3>
+                <div class="overflow-x-auto max-h-64 overflow-y-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="text-gray-500">
+                            <tr>
+                                <th class="pb-2">Time</th>
+                                <th class="pb-2">Action</th>
+                                <th class="pb-2">Target User</th>
+                                <th class="pb-2">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminHistoryList" class="divide-y divide-gray-800 text-gray-300"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <div id="upgradeModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div class="bg-cardBg p-6 rounded-2xl border border-solPurple w-full max-w-md relative shadow-neon-purple">
+                <button onclick="closeModal('upgradeModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">&times;</button>
+                <h2 class="text-2xl font-bold text-solPurple mb-2">Upgrade Power</h2>
+                <p class="text-sm text-gray-300 mb-6 bg-darkBg p-3 rounded border border-gray-700">Cost: 0.1 cents USD in SOL per 150 Hash/s</p>
+                
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">Power Packs (1 = 150 Hash/s)</label>
+                    <input type="number" id="upgradeQty" value="1" min="1" oninput="updateUpgradeCost()" class="w-full bg-darkBg border border-gray-600 rounded-lg p-3 text-white focus:border-solPurple focus:outline-none text-lg">
+                </div>
+                
+                <div class="bg-darkBg p-4 rounded-lg mb-6 text-center border border-gray-700">
+                    <div class="text-sm text-gray-400 mb-1">Send EXACTLY</div>
